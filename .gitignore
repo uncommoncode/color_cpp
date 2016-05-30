@@ -4,6 +4,12 @@
 *.o
 *.obj
 
+# Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Precompiled Headers
 *.gch
 *.pch
@@ -26,3 +32,18 @@
 *.exe
 *.out
 *.app
+
+# Projects
+build/
+xcode/
+
+# Mac stuff
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+
+
