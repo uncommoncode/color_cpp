@@ -1,14 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
-include("cmake/HunterGate.cmake")
-HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.14.1.tar.gz"
-    SHA1 "d073cc04d59a01782385799568afce78066a8cec"
-)
+include(cmake/google_test.cmake)
 
 project(color)
 
-set(sources    color/transformation.cpp
+set(sources color/transformation.cpp
             color/palette.cpp
             color/interpolation.cpp
             color/internal/math.cpp)
@@ -33,15 +29,13 @@ set(compiler_features cxx_generalized_initializers
 add_library(color ${sources} ${headers})
 target_compile_features(color PUBLIC ${compiler_features})
 
-hunter_add_package(GTest)
-find_package(GTest CONFIG REQUIRED)
-
 enable_testing()
 add_executable(test_color test/test_transformation.cpp
                           test/test_palette.cpp)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${GTEST_INCLUDE_DIRS})
 target_compile_features(test_color PUBLIC ${compiler_features})
-target_link_libraries(test_color color GTest::main)
+target_link_libraries(test_color color ${GTEST_BOTH_LIBRARIES})
+add_dependencies(test_color googletest)
 add_test(TestColor test_color)
 
 install(TARGETS color
