@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace color {
 
 namespace internal {
@@ -55,16 +57,16 @@ template <Comparator comparator, typename Type> Type cmp(Type a, Type b) {
   return Compare<comparator, Type>::compare(a, b);
 }
 
-template <Comparator comparator, typename Type, typename... Args> Type cmp(Type a, Args... args) {
-  return cmp<comparator, Type>(a, cmp<comparator, Type>(args...));
+template <Comparator comparator, typename Type, typename... Args> Type cmp(Type a, Args&&... args) {
+  return cmp<comparator, Type>(a, cmp<comparator, Type>(std::forward<Args>(args)...));
 }
 
-template <typename Type, typename... Args> Type min(Type a, Args... args) {
-  return cmp<Comparator::Min, Type>(a, args...);
+template <typename Type, typename... Args> Type min(Type a, Args&&... args) {
+  return cmp<Comparator::Min, Type>(a, std::forward<Args>(args)...);
 }
 
-template <typename Type, typename... Args> Type max(Type a, Args... args) {
-  return cmp<Comparator::Max, Type>(a, args...);
+template <typename Type, typename... Args> Type max(Type a, Args&&... args) {
+  return cmp<Comparator::Max, Type>(a, std::forward<Args>(args)...);
 }
 
 template <typename FunctionType>
