@@ -5,7 +5,7 @@ ExternalProject_Add(
     URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
     INSTALL_COMMAND ""
-	CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
 )
 
 ExternalProject_Get_Property(googletest binary_dir)
