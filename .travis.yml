@@ -2,8 +2,6 @@ sudo: false
 language: cpp
 compiler:
   - gcc
-install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 addons:
   apt:
     sources:
@@ -13,4 +11,4 @@ addons:
       - g++-4.8
       - cmake
 script:
-  - mkdir -p build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../cmake/toolchain-linux-g++11.cmake .. && make && make test
+  - mkdir -p build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../cmake/toolchain-travis-ci.cmake .. && make && make test
