@@ -1,5 +1,8 @@
 # Color
 
+![TravisCI Build Status](https://travis-ci.org/uncommoncode/color_cpp.svg?branch=master)
+
+
 This C+11 library provides a self-contained colorspace conversion and interpolation for common color formats useful in artistic and visualization settings.
 
 The currently supported colorspaces include:
@@ -10,7 +13,8 @@ The currently supported colorspaces include:
  * HSL
  * CIE-XYZ
  * `L*a*b*`
- 
+
+# Example
 There are conversion helpers to allow converting from one space to another. For example, converting a hex color from `0xd7f310` to HSV and printing the output:
 
 ```
