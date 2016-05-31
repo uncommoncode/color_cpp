@@ -4,6 +4,44 @@
 
 namespace color {
 
+// Defined for the CIE 1931 2 degree Standard Illuminant D65.
+// D65 is the most standard illuminant outside of D50 within printing, representing an "average noon
+// daylight from the northern sky."
+//
+// Given the xyY coordinates for D65:
+//  x = 0.312727
+//  y = 0.329023
+//  Y = 1.0        (because the lightness is 1 for white)
+// You can convert to XYZ:
+//  X = x * Y / y = x / y
+//  Y = Y = 1
+//  Z = (1 - x - y) * Y / y = (1 - x - y) / y
+//
+// NOTE: Others seem to round these values to only a few significant figures, perhaps due to copy
+// and pasting.
+// Philosophically we are chosing accuracy over constants found in other code bases.
+// It seems that having exact values here cause chromacity coordinates in L*a*b* to be non-zero with
+// a white point, suggesting that some of the conversion code is more sensitive to these illuminant
+// values than meets the eye.
+//
+// The values here happen to match what D3's implementation uses converting to Lab.
+//
+// References:
+//  https://en.wikipedia.org/wiki/Illuminant_D65
+//  https://en.wikipedia.org/wiki/Talk:Illuminant_D65
+//  https://www.w3.org/Graphics/Color/srgb
+//  https://en.wikipedia.org/wiki/SRGB
+//  https://engineering.purdue.edu/~bouman/ece637/notes/pdf/ColorSpaces.pdf
+//  http://www.easyrgb.com/index.php?X=MATH&H=15
+//  https://github.com/d3/d3-color/blob/v0.4.2/src/lab.js
+//  http://www.babelcolor.com/index_htm_files/A%20review%20of%20RGB%20color%20spaces.pdf
+//  https://www.konicaminolta.eu/fileadmin/content/eu/Measuring_Instruments/4_Learning_Centre/L_D/Light_sources_and_illuminants/Apps_Note_1_-_Light_sources_and_illuminants.pdf
+static const constexpr Xyz kWhitePointD65 = {0.95047f, 1.0f, 1.08883f};
+
+// Convert from XYZ tristimulus values with a D65 reference whitepoint to linear sRGB.
+// References:
+//  http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+//  https://www.w3.org/Graphics/Color/srgb
 struct XyzToRgbMatrix {
   static constexpr const float values[9] = {3.2404542f,  -1.5371385f, -0.4985314f,
                                             -0.9692660f, 1.8760108f,  0.0415560f,
@@ -12,6 +50,10 @@ struct XyzToRgbMatrix {
 
 constexpr const float XyzToRgbMatrix::values[];
 
+// Convert from linear sRGB to XYZ tristimulus values with a D65 reference whitepoint.
+// References:
+//  http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+//  https://www.w3.org/Graphics/Color/srgb
 struct RgbToXyzMatrix {
   static constexpr const float values[9] = {0.4124564f, 0.3575761f, 0.1804375f,
                                             0.2126729f, 0.7151522f, 0.0721750f,
@@ -20,7 +62,6 @@ struct RgbToXyzMatrix {
 
 constexpr const float RgbToXyzMatrix::values[];
 
-// Defined for D65
 static const float kXyzGammaA = 0.055f;
 static const float kXyzGammaExp = 2.4f;
 
@@ -53,8 +94,6 @@ Xyz to_xyz(const sRgb& srgb) {
   internal::const_matrix_multiply<RgbToXyzMatrix>(rgb_linear, xyz.values);
   return xyz;
 }
-
-static const constexpr Xyz kWhitePointD65 = {0.95047f, 1.0f, 1.08883f};
 
 static const float kLabDivision = 6.0f / 29.0f;
 static const float kLabOffset = 4.0f / 29.0f;
