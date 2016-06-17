@@ -62,6 +62,18 @@ struct RgbToXyzMatrix {
 
 constexpr const float RgbToXyzMatrix::values[];
 
+// Convert from gamma corrected sRGB to linear sRGB for color space conversions.
+//
+// These constants, despite rounding, appear to be standards.
+//
+// This approximates a median gamma of 2.2 although the min is 1 and max is 2.4 in our range.
+//
+// The peicewise solution is for numerical stability.
+//
+// References:
+//  https://en.wikipedia.org/wiki/SRGB#Theory_of_the_transformation
+//  http://www.ryanjuckett.com/programming/rgb-color-space-conversion/
+//  https://www.w3.org/Graphics/Color/srgb
 static const float kXyzGammaA = 0.055f;
 static const float kXyzGammaExp = 2.4f;
 
@@ -95,6 +107,12 @@ Xyz to_xyz(const sRgb& srgb) {
   return xyz;
 }
 
+// Convert XYZ to L*a*b* by applying a standard piecewise nonlinearity to compensate for numerical
+// concerns with power.
+// References:
+//  http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
+//  http://www.easyrgb.com/index.php?X=MATH&H=07#text7
+//  https://imagej.nih.gov/ij/plugins/download/Color_Space_Converter.java
 static const float kLabDivision = 6.0f / 29.0f;
 static const float kLabOffset = 4.0f / 29.0f;
 
@@ -104,6 +122,7 @@ float lab_nonlinearity(float value) {
   if (value > internal::const_powf<3>(kLabDivision)) {
     return internal::powf(value, 1.0f / 3.0f);
   } else {
+    // TODO(emmett): Make these explicit constants.
     return value * (internal::const_powf<2>(1.0f / kLabDivision) / 3.0f) + kLabOffset;
   }
 }
@@ -112,6 +131,7 @@ float lab_inverse_nonlinearity(float value) {
   if (value > kLabDivision) {
     return internal::powf(value, 3.0f);
   } else {
+    // TODO(emmett): Make these explicit constants.
     return (3.0f * internal::const_powf<2>(kLabDivision)) * (value - kLabOffset);
   }
 }
@@ -139,12 +159,18 @@ Xyz to_xyz(const Lab& lab) {
   return xyz;
 }
 
+// Convert a Hue, Saturation, * (HSL and HSV) to RGB.
+// References:
+//  http://dystopiancode.blogspot.com/2012/06/hsl-rgb-conversion-algorithms-in-c.html
+//  http://www.easyrgb.com/index.php?X=MATH&H=21#text21
+//  https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
 template <typename HscType> sRgb hsc_to_srgb(const HscType& hsc, float chroma, float dv) {
   const float hue_p = hsc.hue * 360.0f / 60.0f;
   const float t = (1.0f - internal::abs(internal::modf(hue_p, 2.0f) - 1.0f));
   const float x = chroma * t;
   internal::Vector3f rgb_hue_chroma{0.0f};
 
+  // The components to assign depend on the corners of a hexagon.
   const int segment = int(internal::floorf(hue_p));
   switch (segment) {
   case 0:
@@ -232,6 +258,7 @@ HscType srgb_to_hsc(const sRgb& srgb, Finisher finisher) {
   } else {
     hsc.hue = 4.0f + (srgb.red - srgb.green) / dv;
   }
+
   // Normalize to [0, 1] by multiplying by 60 degrees / 360 degrees
   hsc.hue = hsc.hue / 6.0f;
 
@@ -241,6 +268,7 @@ HscType srgb_to_hsc(const sRgb& srgb, Finisher finisher) {
 }
 
 Hsl to_hsl(const sRgb& srgb) {
+  // https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
   return srgb_to_hsc<Hsl>(srgb, [](Hsl* hsl, float max, float min, float dv) {
     hsl->lightness = (max + min) * 0.5f;
     if (dv == 0.0f) {
@@ -253,6 +281,7 @@ Hsl to_hsl(const sRgb& srgb) {
 }
 
 Hsv to_hsv(const sRgb& srgb) {
+  // https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
   return srgb_to_hsc<Hsv>(srgb, [](Hsv* hsv, float max, float min, float dv) {
     hsv->value = max;
     if (max == 0.0f) {
@@ -280,12 +309,14 @@ sRgb to_srgb(uRgb urgb) {
 }
 
 sRgb to_srgb(const Hsv& hsv) {
+  // https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
   const float chroma = hsv.value * hsv.saturation;
   const float dv = hsv.value - chroma;
   return hsc_to_srgb(hsv, chroma, dv);
 }
 
 sRgb to_srgb(const Hsl& hsl) {
+  // https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
   const float chroma = (1.0f - internal::abs(2.0f * hsl.lightness - 1.0f)) * hsl.saturation;
   const float dv = hsl.lightness - 0.5f * chroma;
   return hsc_to_srgb(hsl, chroma, dv);
