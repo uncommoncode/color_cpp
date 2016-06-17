@@ -131,10 +131,10 @@ TEST(Lab, Conversions) {
   Xyz xyz = {0.68967015f, 0.77014267f, 0.36038125f};
   COLOR_ASSERT_FLOAT_EQ(xyz, to_xyz(srgb));
   COLOR_ASSERT_FLOAT_EQ(srgb, to_srgb(xyz));
-  Lab lab = {90.328178f, -9.0098085f, 44.979263f};
+  Lab lab = {90.328178f, -9.009838f, 44.979274f};
   // TODO(emmett): Values differ quite a bit from Linux and Mac here. It would be good to see why
   // numerically these change so much.
-  COLOR_ASSERT_NEAR(lab, to_lab(xyz), 1.0e-4f);
-  COLOR_ASSERT_FLOAT_EQ(xyz, to_xyz(lab));
+  COLOR_ASSERT_NEAR(lab, to_lab(xyz), 1.0e-5f);
+  COLOR_ASSERT_NEAR(xyz, to_xyz(lab), 1.0e-6f);
 }
 }

@@ -2,8 +2,7 @@
 
 ![TravisCI Build Status](https://travis-ci.org/uncommoncode/color_cpp.svg?branch=master)
 
-
-This C+11 library provides a self-contained colorspace conversion and interpolation for common color formats useful in artistic and visualization settings.
+This C++11 library provides a self-contained colorspace conversion and interpolation library for common color formats useful in artistic and visualization settings.
 
 The currently supported colorspaces include:
 
